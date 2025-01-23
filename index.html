@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>D3.js Gantt Chart with Dependencies</title>
+    <title>D3.js Gantt Chart with Hover-Based Dependencies</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {
@@ -12,7 +12,7 @@
         }
         .task-label {
             fill: darkpurple;
-            font-size: 14px;
+            font-size: 12px;
         }
         .tooltip {
             position: absolute;
@@ -26,22 +26,17 @@
         .dependency-line {
             stroke: #888;
             stroke-width: 2;
-            marker-end: url(#arrowhead);
+            stroke-opacity: 0.1; /* Default faint lines */
         }
     </style>
 </head>
 <body>
     <div id="chart" class="chart"></div>
     <script>
-        function getQueryParams() {
-            const params = new URLSearchParams(window.location.search);
-            return Object.fromEntries(params.entries());
-        }
-
         function createGanttChart(data, dependencies) {
-            const margin = { top: 50, right: 40, bottom: 50, left: 200 };
-            const width = 1200 - margin.left - margin.right;
-            const height = 800 - margin.top - margin.bottom;
+            const margin = { top: 50, right: 20, bottom: 50, left: 150 };
+            const width = 1000 - margin.left - margin.right;
+            const height = 600 - margin.top - margin.bottom;
 
             const svg = d3.select("#chart")
                 .append("svg")
@@ -49,18 +44,6 @@
                 .attr("height", height + margin.top + margin.bottom)
                 .append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
-
-            svg.append("defs").append("marker")
-                .attr("id", "arrowhead")
-                .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 10)
-                .attr("refY", 0)
-                .attr("orient", "auto")
-                .attr("markerWidth", 6)
-                .attr("markerHeight", 6)
-                .append("path")
-                .attr("d", "M0,-5L10,0L0,5")
-                .attr("fill", "#888");
 
             const parseDate = d3.timeParse("%Y-%m-%d");
             data.forEach(d => {
@@ -128,9 +111,13 @@
                     `)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 20) + "px");
+
+                    svg.selectAll(".dependency-line")
+                        .attr("stroke-opacity", dep => (dep.from === d.label || dep.to === d.label) ? 1 : 0.1);
                 })
                 .on("mouseout", function () {
                     tooltip.transition().duration(200).style("opacity", 0);
+                    svg.selectAll(".dependency-line").attr("stroke-opacity", 0.1);
                 });
 
             dependencies.forEach(dep => {
@@ -143,36 +130,25 @@
                         .attr("x1", x(sourceTask.end))
                         .attr("y1", y(sourceTask.label) + y.bandwidth() / 2)
                         .attr("x2", x(targetTask.start))
-                        .attr("y2", y(targetTask.label) + y.bandwidth() / 2);
+                        .attr("y2", y(targetTask.label) + y.bandwidth() / 2)
+                        .attr("stroke", "#888")
+                        .attr("stroke-opacity", 0.1);
                 }
             });
         }
 
-        const params = getQueryParams();
-        if (params.labels && params.startDates && params.endDates && params.statuses && params.dependencies) {
-            const labels = params.labels.split(',');
-            const startDates = params.startDates.split(',');
-            const endDates = params.endDates.split(',');
-            const statuses = params.statuses.split(',');
-            const dependencies = params.dependencies.split(',').map(dep => {
-                const [from, to] = dep.split(':');
-                return { from: from.trim(), to: to.trim() };
-            });
+        const data = [
+            { label: "Task A", start: "2025-01-01", end: "2025-01-05", status: "Completed" },
+            { label: "Task B", start: "2025-01-03", end: "2025-01-08", status: "In Progress" },
+            { label: "Task C", start: "2025-01-07", end: "2025-01-10", status: "Not Started" }
+        ];
 
-            if (labels.length === startDates.length && startDates.length === endDates.length && endDates.length === statuses.length) {
-                const data = labels.map((label, i) => ({
-                    label: label.trim(),
-                    start: startDates[i].trim(),
-                    end: endDates[i].trim(),
-                    status: statuses[i].trim()
-                }));
-                createGanttChart(data, dependencies);
-            } else {
-                document.getElementById("chart").innerHTML = "Error: Mismatched data lengths in query parameters.";
-            }
-        } else {
-            document.getElementById("chart").innerHTML = "Error: Missing required query parameters.";
-        }
+        const dependencies = [
+            { from: "Task A", to: "Task B" },
+            { from: "Task B", to: "Task C" }
+        ];
+
+        createGanttChart(data, dependencies);
     </script>
 </body>
 </html>
