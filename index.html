@@ -26,13 +26,18 @@
         .dependency-line {
             stroke: #888;
             stroke-width: 2;
-            stroke-opacity: 0.1; /* Default faint lines */
+            stroke-opacity: 0.1;
         }
     </style>
 </head>
 <body>
     <div id="chart" class="chart"></div>
     <script>
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            return Object.fromEntries(params.entries());
+        }
+
         function createGanttChart(data, dependencies) {
             const margin = { top: 50, right: 20, bottom: 50, left: 150 };
             const width = 1000 - margin.left - margin.right;
@@ -137,18 +142,31 @@
             });
         }
 
-        const data = [
-            { label: "Task A", start: "2025-01-01", end: "2025-01-05", status: "Completed" },
-            { label: "Task B", start: "2025-01-03", end: "2025-01-08", status: "In Progress" },
-            { label: "Task C", start: "2025-01-07", end: "2025-01-10", status: "Not Started" }
-        ];
+        const params = getQueryParams();
+        if (params.labels && params.startDates && params.endDates && params.statuses && params.dependencies) {
+            const labels = params.labels.split(',');
+            const startDates = params.startDates.split(',');
+            const endDates = params.endDates.split(',');
+            const statuses = params.statuses.split(',');
+            const dependencies = params.dependencies.split(',').map(dep => {
+                const [from, to] = dep.split(':');
+                return { from: from.trim(), to: to.trim() };
+            });
 
-        const dependencies = [
-            { from: "Task A", to: "Task B" },
-            { from: "Task B", to: "Task C" }
-        ];
-
-        createGanttChart(data, dependencies);
+            if (labels.length === startDates.length && startDates.length === endDates.length && endDates.length === statuses.length) {
+                const data = labels.map((label, i) => ({
+                    label: label.trim(),
+                    start: startDates[i].trim(),
+                    end: endDates[i].trim(),
+                    status: statuses[i].trim()
+                }));
+                createGanttChart(data, dependencies);
+            } else {
+                document.getElementById("chart").innerHTML = "Error: Mismatched data lengths in query parameters.";
+            }
+        } else {
+            document.getElementById("chart").innerHTML = "Error: Missing required query parameters.";
+        }
     </script>
 </body>
 </html>
