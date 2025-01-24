@@ -83,9 +83,13 @@
                 d.end = parseDate(d.end);
             });
 
+            // Find the earliest start date and latest end date for the domain
+            const earliestStartDate = d3.min(data, d => d.start);
+            const latestEndDate = d3.max(data, d => d.end);
+
             // Scales
             const x = d3.scaleTime()
-                .domain([data[0].start, d3.max(data, d => d.end)]) // Start date matches first task
+                .domain([earliestStartDate, latestEndDate]) // Start from earliest start date to latest end date
                 .range([0, width]);
 
             const y = d3.scaleBand()
@@ -94,7 +98,7 @@
                 .padding(0.5);
 
             // Axes
-            const xAxis = d3.axisTop(x).tickFormat(d3.timeFormat("%b %d, %Y")); // X-axis at the top
+            const xAxis = d3.axisTop(x).tickFormat(d3.timeFormat("%b %d, %Y"));
             const yAxis = d3.axisLeft(y);
 
             // Append x-axis above the first task
