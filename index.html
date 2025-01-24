@@ -109,8 +109,9 @@
                 .attr("y1", margin.top) // Start at the top of the chart area (not x-axis)
                 .attr("x2", d => x(d))
                 .attr("y2", height + margin.top) // Extend to the bottom of the chart area
-                .attr("stroke", "gray")
-                .attr("stroke-dasharray", "2,2");
+                .attr("stroke", "#ccc")  
+                .attr("stroke-width", 1)  
+                .attr("stroke-opacity", 1);
 
 
             const taskHeight = 20;
