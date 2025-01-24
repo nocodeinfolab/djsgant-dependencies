@@ -100,19 +100,6 @@
                 .call(yAxis)
                 .selectAll("text")
                 .remove();
-            
-            chartGroup.selectAll(".grid-line")
-                .data(x.ticks())
-                .enter()
-                .append("line")
-                .attr("class", "grid-line")
-                .attr("x1", d => x(d))  
-                .attr("x2", d => x(d))  
-                .attr("y1", 0)  
-                .attr("y2", height)  
-                .attr("stroke", "#ccc")  
-                .attr("stroke-width", 1)  
-                .attr("stroke-opacity", 1);
 
             const taskHeight = 20;
 
