@@ -43,7 +43,7 @@
 
         function createGanttChart(data, dependencies) {
             // Dimensions and margins
-            const margin = { top: 50, right: 20, bottom: 50, left: 150 };
+            const margin = { top: 60, right: 20, bottom: 50, left: 150 };
             const width = 1200;
             const height = 50 * data.length;
 
@@ -85,7 +85,7 @@
 
             // Scales
             const x = d3.scaleTime()
-                .domain([d3.min(data, d => d.start), d3.max(data, d => d.end)])
+                .domain([data[0].start, d3.max(data, d => d.end)]) // Start date matches first task
                 .range([0, width]);
 
             const y = d3.scaleBand()
@@ -94,28 +94,27 @@
                 .padding(0.5);
 
             // Axes
-            const xAxis = d3.axisTop(x).tickFormat(d3.timeFormat("%b %d, %Y")); // Repositioned to top
+            const xAxis = d3.axisTop(x).tickFormat(d3.timeFormat("%b %d, %Y")); // X-axis at the top
             const yAxis = d3.axisLeft(y);
 
-            // Append x-axis
+            // Append x-axis above the first task
             chartGroup.append("g")
                 .attr("class", "x-axis")
                 .call(xAxis)
+                .attr("transform", `translate(0,${-y.bandwidth() / 2})`) // Position above first task
                 .selectAll("text")
-                .attr("dy", "-0.5em") // Move text above the axis
-                .attr("dx", "-0.5em") // Adjust position
-                .attr("transform", "rotate(-45)") // Rotate for better readability
-                .style("text-anchor", "end");
+                .style("text-anchor", "middle") // Horizontal text alignment
+                .attr("dy", "-0.5em"); // Adjust spacing above line
 
             // Add gridlines for x-axis
             chartGroup.selectAll(".grid-line")
-                .data(x.ticks())
+                .data(x.ticks(5)) // Limit to 5 ticks
                 .enter()
                 .append("line")
                 .attr("class", "grid-line")
                 .attr("x1", d => x(d))
                 .attr("x2", d => x(d))
-                .attr("y1", 0)
+                .attr("y1", -y.bandwidth() / 2) // Start at the X-axis position
                 .attr("y2", height)
                 .attr("stroke", "#ccc")
                 .attr("stroke-width", 1)
