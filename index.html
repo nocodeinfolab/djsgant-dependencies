@@ -94,19 +94,6 @@
                 .attr("class", "x-axis")
                 .attr("transform", `translate(0,${height})`)
                 .call(xAxis);
-            
-            svg.selectAll(".grid-line")
-                data(x.ticks())  // Use the ticks from the x-axis scale
-                .enter()
-                .append("line")
-                .attr("class", "grid-line")
-                .attr("x1", d => x(d))  // Position of the line along the x-axis
-                .attr("x2", d => x(d))  // Same as x1 to make it vertical
-                .attr("y1", 0)  // Start from the top
-                .attr("y2", height)  // Extend to the bottom of the chart
-                .attr("stroke", "#ccc")  // Light gray color for faint lines
-                .attr("stroke-width", 1)  // Line width
-                .attr("stroke-opacity", 0.3);
 
             svg.append("g")
                 .attr("class", "y-axis")
