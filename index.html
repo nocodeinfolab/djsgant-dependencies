@@ -100,6 +100,18 @@
                 .call(yAxis)
                 .selectAll("text")
                 .remove();
+            svg.selectAll(".gridline")
+                .data(x.ticks()) // Adjust the number of ticks as needed
+                .enter()
+                .append("line")
+                .attr("class", "gridline")
+                .attr("x1", d => x(d))  // Position at the x value
+                .attr("y1", margin.top) // Start at the top of the chart area (not x-axis)
+                .attr("x2", d => x(d))
+                .attr("y2", height + margin.top) // Extend to the bottom of the chart area
+                .attr("stroke", "gray")
+                .attr("stroke-dasharray", "2,2");
+
 
             const taskHeight = 20;
 
