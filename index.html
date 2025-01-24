@@ -42,12 +42,12 @@
         }
 
         function createGanttChart(data, dependencies) {
-            // Dimensions and margins
-            const margin = { top: 60, right: 20, bottom: 50, left: 150 };
+            // Update margin to create more space at the top for the x-axis
+            const margin = { top: 100, right: 20, bottom: 50, left: 150 };  // Increased top margin
             const width = 1200;
             const height = 50 * data.length;
 
-            // SVG setup
+            // SVG setup with adjusted margin
             const svg = d3.select("#chart")
                 .append("svg")
                 .attr("width", width)
@@ -83,16 +83,9 @@
                 d.end = parseDate(d.end);
             });
 
-            // Debug: Log parsed dates
-            console.log("Parsed Data:", data);
-
             // Find the earliest start date and latest end date for the domain
             const earliestStartDate = d3.min(data, d => d.start);
             const latestEndDate = d3.max(data, d => d.end);
-
-            // Debug: Log date range
-            console.log("Earliest Start Date:", earliestStartDate);
-            console.log("Latest End Date:", latestEndDate);
 
             // Scales
             const x = d3.scaleTime()
@@ -108,11 +101,11 @@
             const xAxis = d3.axisTop(x).tickFormat(d3.timeFormat("%b %d, %Y"));
             const yAxis = d3.axisLeft(y);
 
-            // Append x-axis above the first task
+            // Append x-axis using updated margin
             chartGroup.append("g")
                 .attr("class", "x-axis")
                 .call(xAxis)
-                .attr("transform", `translate(0,${-y.bandwidth() / 2})`) // Position above first task
+                .attr("transform", `translate(0,${margin.top})`)  // Use margin.top for positioning
                 .selectAll("text")
                 .style("text-anchor", "middle") // Horizontal text alignment
                 .attr("dy", "-0.5em"); // Adjust spacing above line
@@ -170,7 +163,7 @@
                     `)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 20) + "px");
-                    
+
                     d3.select(this).attr("stroke", "black").attr("stroke-width", 2);
                 })
                 .on("mouseout", function () {
