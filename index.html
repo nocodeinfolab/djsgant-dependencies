@@ -94,14 +94,18 @@
                 .padding(0.5);
 
             // Axes
-            const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%b %d, %Y"));
+            const xAxis = d3.axisTop(x).tickFormat(d3.timeFormat("%b %d, %Y")); // Repositioned to top
             const yAxis = d3.axisLeft(y);
 
             // Append x-axis
             chartGroup.append("g")
                 .attr("class", "x-axis")
-                .attr("transform", `translate(0,${height})`)
-                .call(xAxis);
+                .call(xAxis)
+                .selectAll("text")
+                .attr("dy", "-0.5em") // Move text above the axis
+                .attr("dx", "-0.5em") // Adjust position
+                .attr("transform", "rotate(-45)") // Rotate for better readability
+                .style("text-anchor", "end");
 
             // Add gridlines for x-axis
             chartGroup.selectAll(".grid-line")
@@ -117,13 +121,11 @@
                 .attr("stroke-width", 1)
                 .attr("stroke-opacity", 1);
 
-            // Append y-axis
+            // Completely remove y-axis and its line
             chartGroup.append("g")
                 .attr("class", "y-axis")
                 .call(yAxis)
-                .selectAll("text")
-                .remove();
-            chartGroup.selectAll(".domain")
+                .selectAll("*")
                 .remove();
 
             // Tooltip
