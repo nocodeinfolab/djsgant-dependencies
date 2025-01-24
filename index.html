@@ -113,7 +113,9 @@
             svg.append("g")
                 .attr("class", "y-axis")
                 .call(yAxis)
-                .attr("transform", `translate(${margin.left}, ${margin.top})`); // Position y-axis at the left side
+                .attr("transform", `translate(${margin.left}, ${margin.top})`) // Position y-axis at the left side
+                .selectAll(".domain") // Hide the line for the y-axis domain (if needed)
+                .style("stroke", "black");
 
             // Add gridlines for x-axis
             chartGroup.selectAll(".grid-line")
