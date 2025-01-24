@@ -49,8 +49,15 @@
             const svg = d3.select("#chart")
                 .append("svg")
                 .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+            svg.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
-                .append("g")
+                .attr("fill", "#e6f7ff"); // Very light blue
+            
+            const chartGroup = svg.append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
             svg.append("defs").append("marker")
