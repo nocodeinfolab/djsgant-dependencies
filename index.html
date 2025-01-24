@@ -90,7 +90,9 @@
 
             svg.append("g")
                 .attr("class", "y-axis")
-                .call(yAxis);
+                .call(yAxis)
+                .selectAll("text")
+                .remove();
 
             const taskHeight = 20;
 
