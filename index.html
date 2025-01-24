@@ -101,11 +101,11 @@
             const xAxis = d3.axisTop(x).tickFormat(d3.timeFormat("%b %d, %Y"));
             const yAxis = d3.axisLeft(y);
 
-            // Append x-axis outside the main chart area, using the top margin for positioning
+            // Append x-axis **above the first task** at the top of the chart area
             svg.append("g")
                 .attr("class", "x-axis")
                 .call(xAxis)
-                .attr("transform", `translate(${margin.left}, ${margin.top - 40})`) // Positioning x-axis outside chart
+                .attr("transform", `translate(${margin.left}, ${margin.top - 40})`) // Now it's positioned above the first task
                 .selectAll("text")
                 .style("text-anchor", "middle") // Horizontal text alignment
                 .attr("dy", "-0.5em"); // Adjust spacing above line
