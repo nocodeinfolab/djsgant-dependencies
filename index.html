@@ -117,8 +117,8 @@
                 .attr("y", d => y(d.label) + (y.bandwidth() - taskHeight) / 2)
                 .attr("width", d => x(d.end) - x(d.start))
                 .attr("height", taskHeight)
-                .attr("rx", 8)
-                .attr("ry", 8)
+                .attr("rx", 5)
+                .attr("ry", 5)
                 .attr("fill", d => {
                     if (d.status === "Completed") return "green";
                     if (d.status === "In Progress") return "orange";
