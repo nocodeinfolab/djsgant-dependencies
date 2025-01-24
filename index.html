@@ -42,8 +42,8 @@
         }
 
         function createGanttChart(data, dependencies) {
-            // Update margin to create more space at the top for the x-axis
-            const margin = { top: 100, right: 20, bottom: 50, left: 150 };  // Increased top margin
+            // Updated margin to create more space at the top for the x-axis
+            const margin = { top: 100, right: 20, bottom: 50, left: 150 }; // Increased top margin
             const width = 1200;
             const height = 50 * data.length;
 
@@ -101,11 +101,11 @@
             const xAxis = d3.axisTop(x).tickFormat(d3.timeFormat("%b %d, %Y"));
             const yAxis = d3.axisLeft(y);
 
-            // Append x-axis using updated margin
-            chartGroup.append("g")
+            // Append x-axis outside the main chart area, using the top margin for positioning
+            svg.append("g")
                 .attr("class", "x-axis")
                 .call(xAxis)
-                .attr("transform", `translate(0,${margin.top})`)  // Use margin.top for positioning
+                .attr("transform", `translate(${margin.left}, ${margin.top - 40})`) // Positioning x-axis outside chart
                 .selectAll("text")
                 .style("text-anchor", "middle") // Horizontal text alignment
                 .attr("dy", "-0.5em"); // Adjust spacing above line
