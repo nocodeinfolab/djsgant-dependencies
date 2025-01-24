@@ -42,24 +42,28 @@
         }
 
         function createGanttChart(data, dependencies) {
+            // Dimensions and margins
             const margin = { top: 50, right: 20, bottom: 50, left: 150 };
             const width = 1000;
             const height = 50 * data.length;
 
+            // SVG setup
             const svg = d3.select("#chart")
                 .append("svg")
                 .attr("width", width)
                 .attr("height", height + margin.top + margin.bottom);
+
             svg.append("rect")
                 .attr("x", 0)
                 .attr("y", 0)
                 .attr("width", width)
                 .attr("height", height + margin.top + margin.bottom)
-                .attr("fill", "#e6f7ff"); // Very light blue
-            
+                .attr("fill", "#e6f7ff"); // Very light blue background
+
             const chartGroup = svg.append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
+            // Arrowhead marker for dependencies
             svg.append("defs").append("marker")
                 .attr("id", "arrowhead")
                 .attr("viewBox", "0 -5 10 10")
@@ -72,12 +76,14 @@
                 .attr("d", "M0,-5L10,0L0,5")
                 .attr("fill", "#888");
 
+            // Parse dates
             const parseDate = d3.timeParse("%Y-%m-%d");
             data.forEach(d => {
                 d.start = parseDate(d.start);
                 d.end = parseDate(d.end);
             });
 
+            // Scales
             const x = d3.scaleTime()
                 .domain([d3.min(data, d => d.start), d3.max(data, d => d.end)])
                 .range([0, width]);
@@ -87,22 +93,38 @@
                 .range([0, height])
                 .padding(0.5);
 
+            // Axes
             const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%b %d, %Y"));
             const yAxis = d3.axisLeft(y);
 
-            svg.append("g")
+            // Append x-axis
+            chartGroup.append("g")
                 .attr("class", "x-axis")
                 .attr("transform", `translate(0,${height})`)
                 .call(xAxis);
 
-            svg.append("g")
+            // Add gridlines for x-axis
+            chartGroup.selectAll(".grid-line")
+                .data(x.ticks())
+                .enter()
+                .append("line")
+                .attr("class", "grid-line")
+                .attr("x1", d => x(d))
+                .attr("x2", d => x(d))
+                .attr("y1", 0)
+                .attr("y2", height)
+                .attr("stroke", "#ccc")
+                .attr("stroke-width", 1)
+                .attr("stroke-opacity", 0.3);
+
+            // Append y-axis
+            chartGroup.append("g")
                 .attr("class", "y-axis")
                 .call(yAxis)
                 .selectAll("text")
                 .remove();
 
-            const taskHeight = 20;
-
+            // Tooltip
             const tooltip = d3.select("body").append("div")
                 .attr("class", "tooltip")
                 .style("opacity", 0);
@@ -114,9 +136,9 @@
                 .append("rect")
                 .attr("class", "bar")
                 .attr("x", d => x(d.start))
-                .attr("y", d => y(d.label) + (y.bandwidth() - taskHeight) / 2)
+                .attr("y", d => y(d.label) + (y.bandwidth() - 20) / 2)
                 .attr("width", d => x(d.end) - x(d.start))
-                .attr("height", taskHeight)
+                .attr("height", 20)
                 .attr("rx", 10)
                 .attr("ry", 10)
                 .attr("fill", d => {
@@ -125,7 +147,6 @@
                     return "red";
                 })
                 .on("mouseover", function (event, d) {
-                    // Show tooltip
                     tooltip.transition().duration(200).style("opacity", 1);
                     tooltip.html(`
                         <strong>${d.label}</strong><br>
@@ -135,28 +156,15 @@
                     `)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 20) + "px");
-
-                    // Show dependency lines for the hovered task
-                    svg.selectAll(`.dependency-line.from-${sanitizeClassName(d.label)}`)
-                        .transition()
-                        .duration(200)
-                        .style("opacity", 1);
-
+                    
                     d3.select(this).attr("stroke", "black").attr("stroke-width", 2);
                 })
-                .on("mouseout", function (event, d) {
-                    // Hide tooltip
+                .on("mouseout", function () {
                     tooltip.transition().duration(200).style("opacity", 0);
-
-                    // Hide dependency lines
-                    svg.selectAll(`.dependency-line.from-${sanitizeClassName(d.label)}`)
-                        .transition()
-                        .duration(200)
-                        .style("opacity", 0);
-
                     d3.select(this).attr("stroke", null);
                 });
 
+            // Task labels
             svg.selectAll(".task-label")
                 .data(data)
                 .enter()
@@ -166,6 +174,7 @@
                 .attr("y", d => y(d.label) + y.bandwidth() / 2 + 5)
                 .text(d => d.label);
 
+            // Dependency lines
             dependencies.forEach(dep => {
                 const sourceTask = data.find(d => d.label === dep.from);
                 const targetTask = data.find(d => d.label === dep.to);
@@ -185,6 +194,7 @@
             }
         }
 
+        // Process query parameters and initialize the chart
         const params = getQueryParams();
         if (params.labels && params.startDates && params.endDates && params.statuses && params.dependencies) {
             const labels = params.labels.split(',');
