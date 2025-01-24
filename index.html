@@ -106,9 +106,9 @@
                 .append("line")
                 .attr("class", "gridline")
                 .attr("x1", d => x(d))  // Position at the x value
-                .attr("y1", margin.top) // Start at the top of the chart area (not x-axis)
+                .attr("y1", 0) // Start at the top of the chart area (not x-axis)
                 .attr("x2", d => x(d))
-                .attr("y2", height + margin.top) // Extend to the bottom of the chart area
+                .attr("y2", height) // Extend to the bottom of the chart area
                 .attr("stroke", "#ccc")  
                 .attr("stroke-width", 1)  
                 .attr("stroke-opacity", 1);
