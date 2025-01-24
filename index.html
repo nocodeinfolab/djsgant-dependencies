@@ -123,13 +123,6 @@
                 .attr("stroke-width", 1)
                 .attr("stroke-opacity", 1);
 
-            // Completely remove y-axis and its line
-            chartGroup.append("g")
-                .attr("class", "y-axis")
-                .call(yAxis)
-                .selectAll("*")
-                .remove();
-
             // Tooltip
             const tooltip = d3.select("body").append("div")
                 .attr("class", "tooltip")
