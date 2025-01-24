@@ -101,6 +101,8 @@
                 .selectAll("text")
                 .remove();
             
+            const gridlineLength = height + margin.top;
+            
             chartGroup.selectAll(".grid-line")
                 .data(x.ticks())
                 .enter()
@@ -109,7 +111,7 @@
                 .attr("x1", d => x(d))  
                 .attr("x2", d => x(d))  
                 .attr("y1", 0)  
-                .attr("y2", height)  
+                .attr("y2", gridlineLength)  
                 .attr("stroke", "#ccc")  
                 .attr("stroke-width", 1)  
                 .attr("stroke-opacity", 1);
