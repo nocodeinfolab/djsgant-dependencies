@@ -8,12 +8,12 @@
             font-family: Arial, sans-serif;
         }
         .chart {
-            margin: 50px;
+            margin: 20px;
         }
         .task-label {
             fill: darkpurple;
-            font-size: 18px; /* Increase font size */
-            font-weight: bold; /* Make text bold */
+            font-size: 16px;
+            font-weight: bold;
         }
         .tooltip {
             position: absolute;
@@ -23,37 +23,43 @@
             border-radius: 5px;
             font-size: 14px;
             pointer-events: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
         .dependency-line {
             stroke: #888;
             stroke-width: 2;
             marker-end: url(#arrowhead);
+            opacity: 0; /* Initially hidden */
         }
     </style>
 </head>
 <body>
     <div id="chart" class="chart"></div>
     <script>
-        // Utility: Parse query parameters
         function getQueryParams() {
             const params = new URLSearchParams(window.location.search);
             return Object.fromEntries(params.entries());
         }
 
-        // Create the Gantt Chart with dependencies
         function createGanttChart(data, dependencies) {
-            const margin = { top: 50, right: 20, bottom: 100, left: 150 };
-            const width = 1500 - margin.left - margin.right; // Significantly increase chart width
-            const height = 1200 - margin.top - margin.bottom; // Increase chart height
+            const margin = { top: 50, right: 20, bottom: 50, left: 150 };
+            const width = 1100;
+            const height = 50 * data.length;
 
             const svg = d3.select("#chart")
                 .append("svg")
-                .attr("width", width + margin.left + margin.right)
+                .attr("width", width)
+                .attr("height", height + margin.top + margin.bottom);
+            svg.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", width)
                 .attr("height", height + margin.top + margin.bottom)
-                .append("g")
+                .attr("fill", "#e6f7ff"); // Very light blue
+            
+            const chartGroup = svg.append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
-            // Define arrowhead for dependencies
             svg.append("defs").append("marker")
                 .attr("id", "arrowhead")
                 .attr("viewBox", "0 -5 10 10")
@@ -66,14 +72,12 @@
                 .attr("d", "M0,-5L10,0L0,5")
                 .attr("fill", "#888");
 
-            // Parse dates
             const parseDate = d3.timeParse("%Y-%m-%d");
             data.forEach(d => {
                 d.start = parseDate(d.start);
                 d.end = parseDate(d.end);
             });
 
-            // Define scales
             const x = d3.scaleTime()
                 .domain([d3.min(data, d => d.start), d3.max(data, d => d.end)])
                 .range([0, width]);
@@ -81,9 +85,8 @@
             const y = d3.scaleBand()
                 .domain(data.map(d => d.label))
                 .range([0, height])
-                .padding(0.6); // Increase padding to make space between tasks (more spacing)
+                .padding(0.5);
 
-            // Add axes
             const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%b %d, %Y"));
             const yAxis = d3.axisLeft(y);
 
@@ -94,41 +97,33 @@
 
             svg.append("g")
                 .attr("class", "y-axis")
-                .call(yAxis);
+                .call(yAxis)
+                .selectAll("text")
+                .remove();
 
-            // Add bars (Increase bar height)
+            const taskHeight = 20;
+
+            const tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            // Task bars
             svg.selectAll(".bar")
                 .data(data)
                 .enter()
                 .append("rect")
                 .attr("class", "bar")
                 .attr("x", d => x(d.start))
-                .attr("y", d => y(d.label))
+                .attr("y", d => y(d.label) + (y.bandwidth() - taskHeight) / 2)
                 .attr("width", d => x(d.end) - x(d.start))
-                .attr("height", y.bandwidth() * 1.5)  // Increased height for better visibility
+                .attr("height", taskHeight)
                 .attr("fill", d => {
                     if (d.status === "Completed") return "green";
                     if (d.status === "In Progress") return "orange";
                     return "red";
-                });
-
-            // Add labels (Increase font size and position)
-            svg.selectAll(".task-label")
-                .data(data)
-                .enter()
-                .append("text")
-                .attr("class", "task-label")
-                .attr("x", d => x(d.start) + 10)
-                .attr("y", d => y(d.label) + y.bandwidth() * 1.5 / 2 + 6)  // Center the text in bars
-                .text(d => d.label);
-
-            // Add tooltip
-            const tooltip = d3.select("body").append("div")
-                .attr("class", "tooltip")
-                .style("opacity", 0);
-
-            svg.selectAll(".bar")
+                })
                 .on("mouseover", function (event, d) {
+                    // Show tooltip
                     tooltip.transition().duration(200).style("opacity", 1);
                     tooltip.html(`
                         <strong>${d.label}</strong><br>
@@ -138,28 +133,56 @@
                     `)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 20) + "px");
+
+                    // Show dependency lines for the hovered task
+                    svg.selectAll(`.dependency-line.from-${sanitizeClassName(d.label)}`)
+                        .transition()
+                        .duration(200)
+                        .style("opacity", 1);
+
+                    d3.select(this).attr("stroke", "black").attr("stroke-width", 2);
                 })
-                .on("mouseout", function () {
+                .on("mouseout", function (event, d) {
+                    // Hide tooltip
                     tooltip.transition().duration(200).style("opacity", 0);
+
+                    // Hide dependency lines
+                    svg.selectAll(`.dependency-line.from-${sanitizeClassName(d.label)}`)
+                        .transition()
+                        .duration(200)
+                        .style("opacity", 0);
+
+                    d3.select(this).attr("stroke", null);
                 });
 
-            // Add dependency lines
+            svg.selectAll(".task-label")
+                .data(data)
+                .enter()
+                .append("text")
+                .attr("class", "task-label")
+                .attr("x", d => x(d.start) + 5)
+                .attr("y", d => y(d.label) + y.bandwidth() / 2 + 5)
+                .text(d => d.label);
+
             dependencies.forEach(dep => {
                 const sourceTask = data.find(d => d.label === dep.from);
                 const targetTask = data.find(d => d.label === dep.to);
 
                 if (sourceTask && targetTask) {
                     svg.append("line")
-                        .attr("class", "dependency-line")
+                        .attr("class", `dependency-line from-${sanitizeClassName(sourceTask.label)}`)
                         .attr("x1", x(sourceTask.end))
                         .attr("y1", y(sourceTask.label) + y.bandwidth() / 2)
                         .attr("x2", x(targetTask.start))
                         .attr("y2", y(targetTask.label) + y.bandwidth() / 2);
                 }
             });
+
+            function sanitizeClassName(label) {
+                return label.replace(/[^a-zA-Z0-9]/g, "_");
+            }
         }
 
-        // Get data from query parameters and create chart
         const params = getQueryParams();
         if (params.labels && params.startDates && params.endDates && params.statuses && params.dependencies) {
             const labels = params.labels.split(',');
