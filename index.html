@@ -83,9 +83,16 @@
                 d.end = parseDate(d.end);
             });
 
+            // Debug: Log parsed dates
+            console.log("Parsed Data:", data);
+
             // Find the earliest start date and latest end date for the domain
             const earliestStartDate = d3.min(data, d => d.start);
             const latestEndDate = d3.max(data, d => d.end);
+
+            // Debug: Log date range
+            console.log("Earliest Start Date:", earliestStartDate);
+            console.log("Latest End Date:", latestEndDate);
 
             // Scales
             const x = d3.scaleTime()
