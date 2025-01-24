@@ -45,7 +45,7 @@
             // Updated margin to create more space at the bottom for the x-axis
             const margin = { top: 60, right: 20, bottom: 100, left: 150 }; // Increased bottom margin
             const width = 1200;
-            const height = 50 * data.length;
+            const height = 50 * data.length; // Ensure this height is dynamic based on the number of tasks
 
             // SVG setup with adjusted margin
             const svg = d3.select("#chart")
