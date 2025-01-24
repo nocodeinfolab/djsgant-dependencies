@@ -12,8 +12,8 @@
         }
         .task-label {
             fill: darkpurple;
-            font-size: 16px; /* Increased font size */
-            font-weight: bold; /* Made labels bold */
+            font-size: 16px; /* Font size for task labels */
+            font-weight: bold;
         }
         .tooltip {
             position: absolute;
@@ -21,13 +21,17 @@
             border: 1px solid #ccc;
             padding: 5px;
             border-radius: 5px;
-            font-size: 14px; /* Increased tooltip font size */
+            font-size: 14px;
             pointer-events: none;
         }
         .dependency-line {
             stroke: #888;
             stroke-width: 2;
             marker-end: url(#arrowhead);
+            display: none; /* Hide dependency lines initially */
+        }
+        .bar:hover + .dependency-line {
+            display: inline; /* Show dependency lines on hover */
         }
     </style>
 </head>
@@ -76,7 +80,7 @@
             const y = d3.scaleBand()
                 .domain(data.map(d => d.label))
                 .range([0, height])
-                .padding(0.5); // Increased padding for larger spacing
+                .padding(0.5);
 
             const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%b %d, %Y"));
             const yAxis = d3.axisLeft(y);
@@ -90,19 +94,35 @@
                 .attr("class", "y-axis")
                 .call(yAxis);
 
+            const taskHeight = 20; // Match task height to font size for consistency
+
             svg.selectAll(".bar")
                 .data(data)
                 .enter()
                 .append("rect")
                 .attr("class", "bar")
                 .attr("x", d => x(d.start))
-                .attr("y", d => y(d.label))
+                .attr("y", d => y(d.label) + (y.bandwidth() - taskHeight) / 2) // Center bars vertically
                 .attr("width", d => x(d.end) - x(d.start))
-                .attr("height", y.bandwidth() - 10) // Adjusted height for better visual balance
+                .attr("height", taskHeight) // Set bar height
                 .attr("fill", d => {
                     if (d.status === "Completed") return "green";
                     if (d.status === "In Progress") return "orange";
                     return "red";
+                })
+                .on("mouseover", function (event, d) {
+                    // Highlight the bar and show related dependencies
+                    d3.select(this).attr("stroke", "black").attr("stroke-width", 2);
+
+                    svg.selectAll(`.dependency-line.from-${d.label}`)
+                        .style("display", "inline");
+                })
+                .on("mouseout", function (event, d) {
+                    // Remove highlight and hide dependencies
+                    d3.select(this).attr("stroke", null);
+
+                    svg.selectAll(`.dependency-line.from-${d.label}`)
+                        .style("display", "none");
                 });
 
             svg.selectAll(".task-label")
@@ -111,7 +131,7 @@
                 .append("text")
                 .attr("class", "task-label")
                 .attr("x", d => x(d.start) + 5)
-                .attr("y", d => y(d.label) + y.bandwidth() / 2 + 5) // Adjusted position
+                .attr("y", d => y(d.label) + y.bandwidth() / 2 + 5)
                 .text(d => d.label);
 
             const tooltip = d3.select("body").append("div")
@@ -119,7 +139,7 @@
                 .style("opacity", 0);
 
             svg.selectAll(".bar")
-                .on("mouseover", function (event, d) {
+                .on("mouseover.tooltip", function (event, d) {
                     tooltip.transition().duration(200).style("opacity", 1);
                     tooltip.html(`
                         <strong>${d.label}</strong><br>
@@ -130,7 +150,7 @@
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 20) + "px");
                 })
-                .on("mouseout", function () {
+                .on("mouseout.tooltip", function () {
                     tooltip.transition().duration(200).style("opacity", 0);
                 });
 
@@ -140,11 +160,12 @@
 
                 if (sourceTask && targetTask) {
                     svg.append("line")
-                        .attr("class", "dependency-line")
+                        .attr("class", `dependency-line from-${sourceTask.label}`)
                         .attr("x1", x(sourceTask.end))
                         .attr("y1", y(sourceTask.label) + y.bandwidth() / 2)
                         .attr("x2", x(targetTask.start))
-                        .attr("y2", y(targetTask.label) + y.bandwidth() / 2);
+                        .attr("y2", y(targetTask.label) + y.bandwidth() / 2)
+                        .style("display", "none"); // Hide initially
                 }
             });
         }
