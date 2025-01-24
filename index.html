@@ -87,7 +87,7 @@
 
             // Scales
             const x = d3.scaleTime()
-                .domain([earliestStartDate, latestEndDate])
+                .domain([earliestStartDate, latestEndDate])  // The domain for the x-axis
                 .range([0, width]);
 
             const y = d3.scaleBand()
