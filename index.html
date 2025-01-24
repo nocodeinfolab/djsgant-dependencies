@@ -108,8 +108,8 @@
                 .attr("class", "grid-line")
                 .attr("x1", d => x(d))  
                 .attr("x2", d => x(d))  
-                .attr("y1", y.bandwidth() / 2))  
-                .attr("y2", height - y.bandwidth() / 2)  
+                .attr("y1", 0)  
+                .attr("y2", height)  
                 .attr("stroke", "#ccc")  
                 .attr("stroke-width", 1)  
                 .attr("stroke-opacity", 1);
