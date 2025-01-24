@@ -123,6 +123,8 @@
                 .call(yAxis)
                 .selectAll("text")
                 .remove();
+            chartGroup.selectAll(".domain")
+                .remove();
 
             // Tooltip
             const tooltip = d3.select("body").append("div")
