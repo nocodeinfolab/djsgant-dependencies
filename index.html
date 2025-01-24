@@ -106,7 +106,7 @@
                 .attr("y2", height)  // Extend to the bottom of the chart
                 .attr("stroke", "#ccc")  // Light gray color for faint lines
                 .attr("stroke-width", 1)  // Line width
-                .attr("stroke-opacity", 0.3);
+                .attr("stroke-opacity", 1);
 
             svg.append("g")
                 .attr("class", "y-axis")
@@ -130,8 +130,8 @@
                 .attr("y", d => y(d.label) + (y.bandwidth() - taskHeight) / 2)
                 .attr("width", d => x(d.end) - x(d.start))
                 .attr("height", taskHeight)
-                .attr("rx", 8)
-                .attr("ry", 8)
+                .attr("rx", 4)
+                .attr("ry", 4)
                 .attr("fill", d => {
                     if (d.status === "Completed") return "green";
                     if (d.status === "In Progress") return "orange";
